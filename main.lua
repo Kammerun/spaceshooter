@@ -1,3 +1,5 @@
+local helper = require("helper_functions")
+
 local function movePly(value)
     ply.pos_x = ply.pos_x + value
 end
@@ -14,9 +16,9 @@ local function plyShoot()
     }
 
     bullet_index = bullet_index + 1
+    ply.ammo = ply.ammo - 1
     table.insert(bullet_list, bullet)
 end
-
 
 function love.load()
     love.window.setTitle("Spaceshooter")
@@ -28,25 +30,29 @@ function love.load()
 
     ply = {
         pos_x = ScrW * 0.5,
-        pos_y = ScrH * 0.7,
-        ammo = 0
+        pos_y = ScrH * 0.85,
+        ammo = 10
     }
 end
 
-local on_shoot_delay = false
+local on_shoot_delay = 0
 
 function love.update(dt)
-    print(dt)
+    helper.PrintTable(bullet_list)
     if love.keyboard.isDown("d") or love.keyboard.isDown("right") then
         movePly(5)
     elseif love.keyboard.isDown("a") or love.keyboard.isDown("left") then
         movePly(-5)
     end
 
-    if love.keyboard.isDown("space") and not on_shoot_delay then
+    if (love.keyboard.isDown("space")) and (on_shoot_delay < 0) and (ply.ammo > 0) then
 
         plyShoot()
-        on_shoot_delay = true
+        on_shoot_delay = 20
+    end
+
+    if on_shoot_delay > -1 then
+        on_shoot_delay = on_shoot_delay - 1
     end
 
     for key, bullet in pairs(bullet_list) do
