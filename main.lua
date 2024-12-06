@@ -88,10 +88,23 @@ local function calculateHit()
     end
 end
 
+local shaderCode = [[
+
+extern vec2 screen;
+vec4 effect(vec4 color, Image image, vec2 uvs, vec2 screen_coords) {
+
+    vec2 sc = vec2(screen_coords.x / screen.x, screen_coords.y / screen.y);
+
+    return vec4(sc.xy, 1.0, 1.0);
+}
+
+]]
+
 function love.load()
     love.window.setTitle("Spaceshooter")
     ScrW, ScrH = love.window.getMode()
     newFont = love.graphics.newFont(60)
+    shader = love.graphics.newShader(shaderCode)
 
     math.randomseed(os.time())
     game_active = true
@@ -149,7 +162,11 @@ function drawCenteredText(rectX, rectY, text)
     love.graphics.print(text, rectX, rectY, 0, 1, 1, textWidth / 2, textHeight / 2)
 end
 
+
+
 function love.draw()
+    love.graphics.setShader(shader)
+    shader:send("screen", {ScrW, ScrH})
     love.graphics.circle("fill", ply.pos_x, ply.pos_y, 20)
 
     for key, bullet in pairs(bullet_list) do
@@ -161,10 +178,18 @@ function love.draw()
     end
 
     love.graphics.setFont(newFont)
-    love.graphics.print(ply.ammo or "0", math.floor(ScrW * 0.9), math.floor(ScrH * 0.85))
-    love.graphics.print(ply.health or "0", math.floor(ScrW * 0.9), math.floor(ScrH * 0.7))
+    love.graphics.setShader()
 
     if not game_active then
         drawCenteredText(ScrW / 2, ScrH / 2, "DU HAST VERLOREN")
+    else
+        love.graphics.print(ply.ammo or "0", math.floor(ScrW * 0.9), math.floor(ScrH * 0.85))
+        love.graphics.print(ply.health or "0", math.floor(ScrW * 0.9), math.floor(ScrH * 0.7))
+    end
+end
+
+function love.keypressed(k)
+    if k == "r" then
+        love.event.quit "restart"
     end
 end
