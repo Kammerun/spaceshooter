@@ -1,4 +1,4 @@
-helper = {}
+local helper = {}
 
 local function PrintTable(o)
     if type(o) == "table" then
@@ -19,6 +19,17 @@ end
 
 function helper.printHello()
     print("Hello from helper")
+end
+
+function helper.cleanup()
+    enemy_list = {}
+    bullet_list = {}
+    ply = {
+        pos_x = ScrW / 2,
+        pos_y = ScrH - 50,
+        health = 10,
+        ammo = 10
+    }
 end
 
 return helper
