@@ -23,7 +23,8 @@ local function plyShoot()
         index = bullet_index,
         speed = -5, -- Goes up
         pos_x = ply.pos_x,
-        pos_y = ply.pos_y
+        pos_y = ply.pos_y,
+        damage = 1
     }
 
     bullet_index = bullet_index + 1
@@ -47,10 +48,11 @@ local enemy_index = 0
 local function enemyCreate()
     local enemy = {
         index = enemy_index,
-        speed = 5, -- goes down
+        speed = 1, -- goes down
         pos_x = math.random(0, ScrW),
         pos_y = -10,
-        size = 25
+        size = 25,
+        health = 20
     }
 
     enemy_index = enemy_index + 1
@@ -78,16 +80,22 @@ local function calculateHit()
         for id, enemy in pairs(enemy_list) do
             -- https://studyflix.de/mathematik/abstand-zweier-punkte-2005
             if (math.sqrt((enemy.pos_x - bullet.pos_x) ^ 2 + (enemy.pos_y - bullet.pos_y) ^ 2) < 30) then
-                print("HIT!")
-                print(math.sqrt((enemy.pos_x - bullet.pos_x) ^ 2 + (enemy.pos_y - bullet.pos_y) ^ 2))
-                table.remove(enemy_list, id)
-                ply.ammo = ply.ammo + 5
+                --[[ print("HIT!")
+                print(math.sqrt((enemy.pos_x - bullet.pos_x) ^ 2 + (enemy.pos_y - bullet.pos_y) ^ 2)) ]]
+                enemy.health = enemy.health - bullet.damage
+                if enemy.health <= 0 then
+                    table.remove(enemy_list, id)
+                    ply.ammo = ply.ammo + 50
+                end
             end
 
         end
     end
 end
 
+-- https://www.youtube.com/watch?v=DOyJemh_7HE (Am Ende)
+
+-- TODO: Enemys die zu nah am ply sind rot werden lassen / Enemys die weiter nach unten gehen Rot
 local shaderCode = [[
 
 extern vec2 screen;
@@ -95,7 +103,7 @@ vec4 effect(vec4 color, Image image, vec2 uvs, vec2 screen_coords) {
 
     vec2 sc = vec2(screen_coords.x / screen.x, screen_coords.y / screen.y);
 
-    return vec4(sc.xy, 1.0, 1.0);
+    return vec4(sc.xy, 0.0, 1.0);
 }
 
 ]]
@@ -142,7 +150,7 @@ function love.update(dt)
 
     if enemy_delay < 0 then
         enemyCreate()
-        enemy_delay = math.random(150, 200)
+        enemy_delay = math.random(100, 150)
     else
         enemy_delay = enemy_delay - 1
     end
@@ -166,6 +174,7 @@ end
 
 function love.draw()
     love.graphics.setShader(shader)
+    --love.graphics.rectangle("fill", 0, 0, ScrW, ScrH)
     shader:send("screen", {ScrW, ScrH})
     love.graphics.circle("fill", ply.pos_x, ply.pos_y, 20)
 
@@ -174,7 +183,13 @@ function love.draw()
     end
 
     for key, enemy in pairs(enemy_list) do
+        love.graphics.setShader(shader)
         love.graphics.circle("fill", enemy.pos_x, enemy.pos_y, enemy.size)
+        local health = enemy.health
+        love.graphics.setShader()
+        love.graphics.setColor(health > 5 and {1, 1, 1} or {1, 0, 0})
+        love.graphics.rectangle("fill", enemy.pos_x - 50, enemy.pos_y - 50, health * 5, 10)
+        love.graphics.setColor(1, 1, 1)
     end
 
     love.graphics.setFont(newFont)
