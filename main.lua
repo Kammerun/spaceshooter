@@ -21,7 +21,7 @@ local bullet_index = 0
 local function plyShoot()
     local bullet = {
         index = bullet_index,
-        speed = -5, -- Goes up
+        speed = -10, -- Goes up
         pos_x = ply.pos_x,
         pos_y = ply.pos_y,
         damage = 1
@@ -128,9 +128,9 @@ function love.update(dt)
         goto GAMEEND
     end
     -- helper.PrintTable(bullet_list)
-    if love.keyboard.isDown("d") or love.keyboard.isDown("right") then
+    if (love.keyboard.isDown("d") or love.keyboard.isDown("right")) and not (love.keyboard.isDown("a") or love.keyboard.isDown("left")) then
         movePly(10)
-    elseif love.keyboard.isDown("a") or love.keyboard.isDown("left") then
+    elseif (love.keyboard.isDown("a") or love.keyboard.isDown("left")) and not (love.keyboard.isDown("d") or love.keyboard.isDown("right")) then
         movePly(-10)
     end
 
@@ -141,7 +141,7 @@ function love.update(dt)
     if (love.keyboard.isDown("space")) and (on_shoot_delay < 0) and (ply.ammo > 0) then
 
         plyShoot()
-        on_shoot_delay = 10
+        on_shoot_delay = 6
     end
 
     if on_shoot_delay > -1 then
@@ -198,8 +198,8 @@ function love.draw()
     if not game_active then
         drawCenteredText(ScrW / 2, ScrH / 2, "DU HAST VERLOREN")
     else
-        love.graphics.print(ply.ammo or "0", math.floor(ScrW * 0.9), math.floor(ScrH * 0.85))
-        love.graphics.print(ply.health or "0", math.floor(ScrW * 0.9), math.floor(ScrH * 0.7))
+        love.graphics.print(ply.ammo or "0", math.floor(ScrW * 0.05), math.floor(ScrH * 0.85))
+        love.graphics.print(ply.health or "0", math.floor(ScrW * 0.05), math.floor(ScrH * 0.7))
     end
 end
 
